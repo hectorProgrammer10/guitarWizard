@@ -1,26 +1,105 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Slate 50 */
+  --background: #f8fafc;
+  /* Slate 900 */
+  --foreground: #0f172a;
+
+  /* Primary - Indigo 600 */
+  --primary: #2eaa1e;
+  --primary-foreground: #ffffff;
+
+  /* Secondary - Pink 500 */
+  --secondary: #489dec;
+  --secondary-foreground: #ffffff;
+
+  /* Muted - Slate 200 */
+  --muted: #e2e8f0;
+  --muted-foreground: #64748b;
+
+  /* Accent - Indigo 50 */
+  --accent: #eef2ff46;
+  --accent-foreground: #4f46e5;
+
+  /* Borders */
+  --border: #cbd5e1;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  /* Complex mesh gradient for Glassmorphism background */
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+    radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+  /* Overwrite user plain background to make glass pop, but keep their variables if needed */
+
+  /* Fallback to the light slate they had */
+}
+
+/* Glassmorphism Utility */
+.glass {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--foreground);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.glass-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.glass-btn.active {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: bold;
+  box-shadow: 0px 0px 9px var(--accent);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--foreground);
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.3);
+  outline: none;
+  border-color: var(--primary);
 }

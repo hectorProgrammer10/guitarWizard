@@ -1,65 +1,108 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState, useMemo, useCallback } from 'react';
+import Link from 'next/link';
+import Controls from '@/components/Controls';
+import Fretboard from '@/components/Fretboard';
+import ChordCard from '@/components/ChordCard';
+import LanguageSelector from '@/components/LanguageSelector';
+import { generateScaleData, ScaleType } from '@/utils/musicTheory';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Home() {
+  const [root, setRoot] = useState<string>('C');
+  const [scaleType, setScaleType] = useState<ScaleType>('Major');
+  const [mode, setMode] = useState<'chords' | 'notes'>('chords');
+
+  const { t, language } = useLanguage();
+
+  // Memoize expensive calculation
+  const scaleData = useMemo(() => generateScaleData(root, scaleType), [root, scaleType]);
+
+  // Memoize callbacks to prevent child re-renders
+  const handleRootChange = useCallback((newRoot: string) => setRoot(newRoot), []);
+  const handleScaleTypeChange = useCallback((newType: ScaleType) => setScaleType(newType), []);
+  const handleModeChange = useCallback((newMode: 'chords' | 'notes') => setMode(newMode), []);
+
+  // Helper to format scale name localized
+  const scaleTypeName = scaleType === 'Major' ? t.scaleType.major : t.scaleType.minor;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="min-h-screen p-4 md:p-8 relative">
+      <LanguageSelector />
+
+      <div className="max-w-7xl mx-auto flex flex-col items-center mt-3 gap-6">
+
+        {/* Header */}
+        <div className="text-center mt-8 glass py-3 px-6 rounded-xl ">
+          <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-2">
+            {language === 'en' ? (
+              <>Guitar <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Scale</span> Wizard</>
+            ) : (
+              <><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Mago</span> de Escalas</>
+            )}
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-slate-500 font-medium text-lg">
+            {t.subtitle}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Controls */}
+        <Controls
+          selectedRoot={root}
+          onRootChange={handleRootChange}
+          selectedScaleType={scaleType}
+          onScaleTypeChange={handleScaleTypeChange}
+          mode={mode}
+          onModeChange={handleModeChange}
+        />
+
+        {/* Dynamic Content */}
+        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {mode === 'chords' ? (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-center text-slate-800">
+                {t.headers.chordsIn} {root} {scaleTypeName}
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 justify-center">
+                {scaleData.chords.map((chord, index) => (
+                  <ChordCard key={index} chord={chord} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6 flex flex-col items-center">
+              <h2 className="text-2xl font-bold text-center text-slate-800">
+                {t.headers.scaleOnFretboard}: {root} {scaleTypeName}
+              </h2>
+              <Fretboard root={root} scaleType={scaleType} />
+
+              {/* Legend / Info */}
+              <div className="flex gap-6 mt-4 text-sm font-medium">
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-secondary ring-2 ring-white/50 shadow-sm"></span>
+                  <span>{t.legend.rootNote}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-primary shadow-sm"></span>
+                  <span>{t.legend.scaleNote}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </main>
-    </div>
+
+      </div>
+
+      {/* Footer */}
+      <footer className="max-w-7xl mx-auto mt-12 mb-6 text-center">
+        <Link 
+          href="/privacy"
+          className="text-slate-500 hover:text-primary text-sm font-medium transition-colors"
+        >
+          {language === 'en' ? 'Privacy Policy' : 'Política de Privacidad'}
+        </Link>
+      </footer>
+    </main>
   );
 }
